@@ -365,7 +365,7 @@ export default function OrderFormPage() {
                     ref={fileInputRef}
                     type="file"
                     multiple
-                    accept=".stl,.obj,.3mf,.step,.stp,.iges,.igs,.f3d,.pdf,.png,.jpg,.jpeg"
+                    accept=".stl,.obj,.3mf,.step,.stp,.iges,.igs,.f3d,.f3z,.fusion,.sldprt,.sldasm,.slddrw,.x_t,.x_b,.sat,.dwg,.dxf,.pdf,.png,.jpg,.jpeg,.zip,.rar"
                     className="hidden"
                     onChange={e => handleFiles(e.target.files)}
                   />
