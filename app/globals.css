@@ -1,0 +1,198 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&family=Cairo:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #060608;
+  --surface: #0F0F13;
+  --elevated: #17171D;
+  --border: #232329;
+  --accent: #0EA5E9;
+  --accent-glow: rgba(14, 165, 233, 0.25);
+  --text: #F4F4F5;
+  --text-secondary: #A1A1AA;
+  --text-muted: #52525B;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Arabic RTL body override */
+body[dir='rtl'] {
+  font-family: 'Cairo', Tahoma, system-ui, sans-serif;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ── Selection ── */
+::selection { background: var(--accent-glow); color: var(--accent); }
+
+/* ── Form inputs global ── */
+.field-input {
+  @apply w-full bg-brand-elevated border border-brand-border rounded-xl px-4 py-3 text-white placeholder-brand-muted
+    outline-none transition-all duration-200
+    focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20;
+}
+
+.field-input:hover:not(:focus) {
+  border-color: #3F3F46;
+}
+
+/* ── Card ── */
+.glass-card {
+  background: rgba(255,255,255,0.025);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 20px;
+}
+
+/* ── Button variants ── */
+.btn-primary {
+  @apply relative inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl
+    font-semibold text-white text-[15px] transition-all duration-200
+    disabled:opacity-50 disabled:cursor-not-allowed;
+  background: linear-gradient(135deg, #0EA5E9 0%, #2563EB 100%);
+  box-shadow: 0 0 0 0 var(--accent-glow);
+}
+
+.btn-primary:hover:not(:disabled) {
+  box-shadow: 0 0 24px var(--accent-glow);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl
+    font-medium text-brand-text-secondary text-[15px] border border-brand-border
+    hover:border-zinc-500 hover:text-white transition-all duration-200
+    bg-brand-elevated;
+}
+
+/* ── Selection cards ── */
+.select-card {
+  @apply flex flex-col items-center justify-center gap-2 p-5 rounded-2xl border-2 cursor-pointer
+    transition-all duration-200 text-center;
+  border-color: var(--border);
+  background: var(--elevated);
+}
+
+.select-card:hover {
+  border-color: #3F3F46;
+  background: rgba(255,255,255,0.04);
+}
+
+.select-card.selected {
+  border-color: var(--accent);
+  background: rgba(14,165,233,0.08);
+  box-shadow: 0 0 20px rgba(14,165,233,0.12);
+}
+
+/* ── Step indicator ── */
+.step-dot {
+  @apply w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all duration-300;
+}
+
+.step-dot.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.step-dot.complete {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
+}
+
+.step-dot.inactive {
+  border-color: var(--border);
+  color: var(--text-muted);
+  background: var(--elevated);
+}
+
+/* ── Upload zone ── */
+.upload-zone {
+  @apply border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-200;
+  border-color: var(--border);
+}
+
+.upload-zone:hover, .upload-zone.dragging {
+  border-color: var(--accent);
+  background: rgba(14,165,233,0.04);
+}
+
+/* ── Checkbox custom ── */
+.custom-checkbox {
+  @apply w-5 h-5 rounded-md border-2 border-brand-border bg-brand-elevated
+    cursor-pointer transition-all duration-200 flex-shrink-0;
+}
+
+.custom-checkbox.checked {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+/* ── Animations ── */
+.animate-step {
+  animation: fadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Background gradient ── */
+.bg-gradient-main {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(14,165,233,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 80%, rgba(37,99,235,0.05) 0%, transparent 70%),
+    #060608;
+}
+
+/* ── Admin sidebar ── */
+.sidebar-link {
+  @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-brand-text-secondary text-sm font-medium
+    hover:text-white hover:bg-brand-elevated transition-all duration-150 cursor-pointer;
+}
+
+.sidebar-link.active {
+  @apply text-white bg-brand-elevated;
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+/* ── Status badge ── */
+.status-badge {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border;
+}
+
+/* ── Invoice print styles ── */
+@media print {
+  body { background: white !important; color: black !important; }
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  @page { margin: 20mm; size: A4; }
+}
