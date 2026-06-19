@@ -7,7 +7,8 @@ import Link from 'next/link'
 import {
   ArrowLeft, Plus, Trash2, Save, Printer, ExternalLink,
   Mail, Phone, Truck, Store, Calendar, User, Building2,
-  FileText, MessageSquare, Video, Loader2, CheckCircle2
+  FileText, MessageSquare, Video, Loader2, CheckCircle2,
+  Calculator, ChevronDown, ChevronUp, Zap
 } from 'lucide-react'
 import { formatDate, STATUS_COLORS, STATUS_LABELS } from '@/lib/utils'
 import type { Order, InvoiceItem } from '@/types'
@@ -27,6 +28,14 @@ export default function OrderDetailPage() {
   const [deliveryCost, setDeliveryCost] = useState('')
   const [discount, setDiscount] = useState('')
   const [notes, setNotes] = useState('')
+
+  // Filament calculator
+  const [calcOpen, setCalcOpen] = useState(false)
+  const [filamentType, setFilamentType] = useState('PLA')
+  const [filamentGrams, setFilamentGrams] = useState('')
+  const [printHours, setPrintHours] = useState('')
+  const [printerTier, setPrinterTier] = useState('mid')
+  const [marginPct, setMarginPct] = useState('30')
 
   useEffect(() => {
     fetch(`/api/orders/${id}`)
@@ -49,6 +58,33 @@ export default function OrderDetailPage() {
 
   const updateItem = (itemId: string, field: keyof InvoiceItem, value: string | number) =>
     setItems(prev => prev.map(i => i.id === itemId ? { ...i, [field]: value } : i))
+
+  // Filament cost calculator
+  const FILAMENTS: Record<string, { label: string; sarPerG: number }> = {
+    PLA:   { label: 'PLA',           sarPerG: 0.037 },
+    PETG:  { label: 'PETG',          sarPerG: 0.048 },
+    ABS:   { label: 'ABS',           sarPerG: 0.042 },
+    TPU:   { label: 'TPU (Flexible)',sarPerG: 0.070 },
+    Nylon: { label: 'Nylon',         sarPerG: 0.075 },
+    Resin: { label: 'Resin',         sarPerG: 0.085 },
+    CF:    { label: 'Carbon Fiber',  sarPerG: 0.130 },
+  }
+  const PRINTERS: Record<string, { label: string; watt: number; maintPerHr: number }> = {
+    budget: { label: 'Budget (Ender-level)',  watt: 120, maintPerHr: 1.5 },
+    mid:    { label: 'Mid-range (Bambu-level)', watt: 180, maintPerHr: 3.0 },
+    pro:    { label: 'Pro / Industrial',      watt: 350, maintPerHr: 6.0 },
+  }
+  const SAR_PER_KWH = 0.18
+  const grams    = parseFloat(filamentGrams) || 0
+  const hours    = parseFloat(printHours) || 0
+  const margin   = parseFloat(marginPct) || 0
+  const fil      = FILAMENTS[filamentType]
+  const printer  = PRINTERS[printerTier]
+  const matCost  = grams * fil.sarPerG
+  const elecCost = (printer.watt / 1000) * hours * SAR_PER_KWH
+  const maintCost= hours * printer.maintPerHr
+  const baseCost = matCost + elecCost + maintCost
+  const suggestedPrice = baseCost * (1 + margin / 100)
 
   const subtotal = items.reduce((sum, i) => sum + i.qty * i.unitPrice, 0)
   const discountPct = Math.min(100, Math.max(0, parseFloat(discount) || 0))
@@ -261,6 +297,123 @@ export default function OrderDetailPage() {
                 <p className="text-brand-muted text-xs mt-0.5">Fill in pricing — print when ready</p>
               </div>
               <span className="text-xs text-brand-muted">VAT 15% auto-calculated</span>
+            </div>
+
+            {/* Filament Cost Calculator */}
+            <div className="mb-5 border border-brand-border rounded-xl overflow-hidden">
+              <button
+                onClick={() => setCalcOpen(o => !o)}
+                className="w-full flex items-center gap-2 px-4 py-3 bg-brand-elevated hover:bg-zinc-700/50 transition-colors text-sm font-semibold text-white"
+              >
+                <Calculator size={14} className="text-brand-accent" />
+                Filament Cost Calculator
+                <span className="ms-auto text-brand-muted">{calcOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
+              </button>
+
+              {calcOpen && (
+                <div className="p-4 space-y-4 border-t border-brand-border bg-brand-bg/50">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs text-brand-muted mb-1.5">Filament Type</label>
+                      <select
+                        className="field-input text-sm py-2 w-full"
+                        value={filamentType}
+                        onChange={e => setFilamentType(e.target.value)}
+                      >
+                        {Object.entries(FILAMENTS).map(([k, v]) => (
+                          <option key={k} value={k}>{v.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-brand-muted mb-1.5">Printer Tier</label>
+                      <select
+                        className="field-input text-sm py-2 w-full"
+                        value={printerTier}
+                        onChange={e => setPrinterTier(e.target.value)}
+                      >
+                        {Object.entries(PRINTERS).map(([k, v]) => (
+                          <option key={k} value={k}>{v.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-brand-muted mb-1.5">Filament Weight (g)</label>
+                      <input
+                        type="number" min={0} step={0.1}
+                        className="field-input text-sm py-2 w-full"
+                        placeholder="e.g. 85"
+                        value={filamentGrams}
+                        onChange={e => setFilamentGrams(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-brand-muted mb-1.5">Print Time (hours)</label>
+                      <input
+                        type="number" min={0} step={0.5}
+                        className="field-input text-sm py-2 w-full"
+                        placeholder="e.g. 4.5"
+                        value={printHours}
+                        onChange={e => setPrintHours(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-brand-muted mb-1.5">Profit Margin (%)</label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range" min={0} max={200} step={5}
+                        className="flex-1 accent-brand-accent"
+                        value={marginPct}
+                        onChange={e => setMarginPct(e.target.value)}
+                      />
+                      <span className="text-white text-sm font-bold w-12 text-center">{marginPct}%</span>
+                    </div>
+                  </div>
+
+                  {grams > 0 && hours > 0 && (
+                    <div className="bg-brand-surface rounded-xl p-3 space-y-2 text-xs">
+                      <div className="flex justify-between text-brand-muted">
+                        <span>Material ({grams}g × SAR {fil.sarPerG.toFixed(3)}/g)</span>
+                        <span>SAR {matCost.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-brand-muted">
+                        <span><Zap size={10} className="inline me-1" />{printer.watt}W × {hours}h × SAR {SAR_PER_KWH}/kWh</span>
+                        <span>SAR {elecCost.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-brand-muted">
+                        <span>Maintenance & wear ({hours}h × SAR {printer.maintPerHr}/h)</span>
+                        <span>SAR {maintCost.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-brand-muted border-t border-brand-border pt-2">
+                        <span>Cost base</span>
+                        <span>SAR {baseCost.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-white font-bold text-sm pt-1">
+                        <span>Suggested Price ({marginPct}% margin)</span>
+                        <span className="text-brand-accent">SAR {suggestedPrice.toFixed(2)}</span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const desc = `3D Print — ${fil.label}, ${grams}g, ${hours}h`
+                          setItems(prev => [...prev, {
+                            id: Date.now().toString(),
+                            description: desc,
+                            qty: 1,
+                            unitPrice: Math.ceil(suggestedPrice),
+                          }])
+                          setCalcOpen(false)
+                        }}
+                        className="btn-primary w-full justify-center text-xs py-2 mt-1 gap-1.5"
+                      >
+                        <Plus size={12} />
+                        Add SAR {Math.ceil(suggestedPrice).toFixed(2)} to Invoice
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Line Items */}
