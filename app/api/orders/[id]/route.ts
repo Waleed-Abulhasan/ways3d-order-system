@@ -13,6 +13,16 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   })
 }
 
+export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    await db.order.delete({ where: { id: params.id } })
+    return NextResponse.json({ success: true })
+  } catch (err) {
+    console.error('Order delete error:', err)
+    return NextResponse.json({ error: 'Delete failed' }, { status: 500 })
+  }
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const body = await req.json()

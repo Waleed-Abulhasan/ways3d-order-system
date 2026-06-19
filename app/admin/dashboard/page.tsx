@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import LogoImage from '@/components/LogoImage'
+import DeleteOrderButton from '@/components/DeleteOrderButton'
 import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { formatDate, STATUS_COLORS, STATUS_LABELS } from '@/lib/utils'
@@ -127,10 +128,10 @@ export default async function DashboardPage({
             {orders.map(order => {
               const fileUrls: string[] = JSON.parse(order.fileUrls || '[]')
               return (
+                <div key={order.id} className="relative flex items-stretch gap-2">
                 <Link
-                  key={order.id}
                   href={`/admin/orders/${order.id}`}
-                  className="block bg-brand-surface border border-brand-border rounded-2xl px-5 py-4 hover:border-zinc-600 transition-all group"
+                  className="flex-1 block bg-brand-surface border border-brand-border rounded-2xl px-5 py-4 hover:border-zinc-600 transition-all group"
                 >
                   <div className="flex items-start gap-4">
                     <div className="flex-1 min-w-0">
@@ -166,6 +167,8 @@ export default async function DashboardPage({
                     </div>
                   </div>
                 </Link>
+                <DeleteOrderButton id={order.id} />
+                </div>
               )
             })}
           </div>
