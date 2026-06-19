@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useCallback, useRef } from 'react'
-import LogoImage from '@/components/LogoImage'
 import { useRouter } from 'next/navigation'
 import { tr, type Lang } from '@/lib/translations'
 import { cn } from '@/lib/utils'
@@ -179,7 +178,8 @@ export default function OrderFormPage() {
     >
       {/* Logo */}
       <div className="mb-8 text-center">
-        <LogoImage className="mx-auto mb-3 object-contain h-14 w-auto" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-dark-bg.jpg" alt="Ways3D" className="mx-auto mb-3 object-contain h-14 w-auto" />
         <p className="text-brand-text-secondary text-xs tracking-widest uppercase">{t.tagline}</p>
       </div>
 
